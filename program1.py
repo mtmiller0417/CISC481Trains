@@ -226,7 +226,7 @@ class Node:
     # END __init__(self, state, parent)
 
     def calc_f(self, end_state):
-        self.h = get_score(self.state, end_state)
+        self.h = heruristic2(self.state, end_state) # get_score
         self.f = self.g + self.h
         return (self.h + self.g)
     # END calc_F(self, end_state)
@@ -321,8 +321,16 @@ def heruristic2(state, end_state):
             for car in track:
                 if car != None:
                     end_state_car_string += car
-    print(state_car_string)
-    print(end_state_car_string)
+    total_dist = 0
+    # Check how many cars are out of place
+    # For every car in the end_state_car_string
+    for car_index in range(len(end_state_car_string)):
+        for i in range(len(state_car_string)):
+            if end_state_car_string[car_index] == state_car_string[i]:
+                total_dist += abs(i - car_index)
+    #print(state_car_string)
+    #print(end_state_car_string)
+    return total_dist
 # END heruristic2(state, end_state)
 
 def distance(from_track_num, to_track_num, yard):
