@@ -56,7 +56,6 @@ def checkForEngine(track_pair, state):
     left = track_pair[0]-1      # -1 becasuse index of list starts at 0
     right = track_pair[1]-1     # -1 becasuse index of list starts at 0
     track_cars_pair = [state[left], state[right]]
-    #print("   " + str(track_cars_pair))
     for track in track_cars_pair:
         for car in track or []:
             if car == '*':
@@ -74,10 +73,8 @@ def findMoveLeft(yard, state, track_num):
         if state[pair[1]-1] != None: # -1 is used because the index starts at 0
             # Check if the track number is found on the left in the yard 
             if pair[1] == track_num:
-                #print(" Pair found: " + str(pair))
                 # Check if either track in the pair has the engine
                 if checkForEngine(pair, state) == True:
-                    #print("  Engine is present in one of the pair")
                     # Create and append an action
                     action = ['LEFT', pair[1], pair[0]] # (DIRECTION FROM-TRACK TO-TRACK) * Transposition of x and y *
                     left_actions.append(action)
@@ -94,10 +91,8 @@ def findMoveRight(yard, state, track_num):
         if state[pair[0]-1] != None: # -1 is used because the index starts at 0
             # Check if the track number is found on the right in the yard 
             if pair[0] == track_num:
-                #print(" Pair found: " + str(pair))
                 # Check if either track in the pair has the engine
                 if checkForEngine(pair, state) == True:
-                    #print("  Engine is present in one of the pair")
                     # Create and append an action
                     action = ['RIGHT', pair[0], pair[1]] # (DIRECTION FROM-TRACK TO-TRACK)
                     right_actions.append(action)
@@ -111,7 +106,6 @@ def possible_actions(yard, state):
     # Loop through all tracks in the yard
     tracks = getTrackList(init_state_1)
     for track in tracks:
-        #print("Looking through track " + str(track.track_num) + " " + str(track.cars))
         new_left_actions = findMoveLeft(yard, state, track.track_num)
         new_right_actions = findMoveRight(yard, state, track.track_num)
         # If new actions were found, append them to the 
@@ -121,13 +115,6 @@ def possible_actions(yard, state):
         if len(new_right_actions) > 0:
             for a in new_right_actions:
                 actions.append(a)
-
-    #print("\nPossible actions: " + str(len(actions)))
-
-    #for action in actions:
-        #print(action) # print the possible actions
-        #result(action, state)
-
     return actions
 # END possible_actions(yard, state)
 
@@ -226,7 +213,7 @@ class Node:
     # END __init__(self, state, parent)
 
     def calc_f(self, end_state):
-        self.h = heruristic2(self.state, end_state) # get_score
+        self.h = heruristic2(self.state, end_state) # get_score is the alternative heuristic
         self.f = self.g + self.h
         return (self.h + self.g)
     # END calc_F(self, end_state)
@@ -242,7 +229,6 @@ def IDS(src, target, max_depth):
     action_path = []
     found = False
     while found == False and depth <= max_depth :
-        #print(depth)
         if DLS(src, target, depth, action_path) == True:
             print(action_path)
             return True
@@ -254,7 +240,6 @@ def IDS(src, target, max_depth):
 def DLS(src, target, limit, action_path):
     # Check if the target has been found
     if src.state == target:
-        #print("FOUND THE TARGET")
         # Use src.action to build an ordered list of action to reach the goal
         action_path = [str(src.action)]
         return True
@@ -308,6 +293,7 @@ def get_score(state, end_state):
     return total_cars - score
 #END get_score(state, end_state)
 
+# Got this idea from James Scripchuk 
 def heruristic2(state, end_state):
     state_car_string = ""
     end_state_car_string = ""
@@ -322,14 +308,11 @@ def heruristic2(state, end_state):
                 if car != None:
                     end_state_car_string += car
     total_dist = 0
-    # Check how many cars are out of place
-    # For every car in the end_state_car_string
+    # Check the total distance that each car is out of place and add them up
     for car_index in range(len(end_state_car_string)):
         for i in range(len(state_car_string)):
             if end_state_car_string[car_index] == state_car_string[i]:
                 total_dist += abs(i - car_index)
-    #print(state_car_string)
-    #print(end_state_car_string)
     return total_dist
 # END heruristic2(state, end_state)
 
@@ -385,7 +368,6 @@ def check_open_list(open_list, node):
                 open_node.f = node.f
                 open_node.parent = node.parent
 
-
     for open_node in open_list:
         # If a node with a matching state was found, check its f...
         if open_node.state == node.state:
@@ -437,7 +419,6 @@ def check_closed_list(closed_list, node):
                 return False
     return True
 # END check_closed_list(closed_list, node)
-
 
 #if a node with the same position as successor is in the OPEN list which has a lower f than successor, skip this successor
 # If a new_node with the same state is in the open list, check if the f value of the node in the open list is lower than the new_node.f
