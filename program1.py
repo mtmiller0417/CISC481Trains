@@ -325,10 +325,6 @@ def heruristic2(state, end_state):
     print(end_state_car_string)
 # END heruristic2(state, end_state)
 
-heruristic2(init_state_1, end_state_1)
-sys.exit(1)
-
-
 def distance(from_track_num, to_track_num, yard):
     found = False
     distance = 0
