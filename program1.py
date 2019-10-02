@@ -513,14 +513,19 @@ def expand_answer(node, yard):
 
 # ***************************************************************************************#
 
-# Will use the functions below
+def possible_action_print(yard, state, yard_num):
+    print("\nPossible actions for yard " + str(yard_num) + ", state: " + str(state))
+    print(possible_actions(yard, state))
+# END possible_action_print(yard, state, yard_num)
 
-# prints each state in the yard
-print("Initial State 1")
-#printState(init_state_1)
-printState(s_init_state)
-
+print("PROBLEM 1")
 possible_actions(yard_3, s_init_state)
+possible_action_print(yard_1, init_state_1, 1)
+possible_action_print(yard_1, end_state_1, 1)
+possible_action_print(yard_2, init_state_2, 2)
+possible_action_print(yard_2, end_state_2, 2)
+possible_action_print(yard_5, init_state_5, 5)
+possible_action_print(yard_5, end_state_5, 5)
 
 # TEST PROBLEM 2
 
@@ -575,15 +580,14 @@ print("Problem 3 is correct")
 print("\n****************************************")
 # Works for yards 3-5
 
-"""
 print("\nRunning blind search on yard 3")
 print(blind_search(yard_3, init_state_3, end_state_3))
 print("\nRunning blind search on yard 4")
 print(blind_search(yard_4, init_state_4, end_state_4))
 print("\nRunning blind search on yard 5")
 print(blind_search(yard_5, init_state_5, end_state_5))
-"""
 
+# Try yard 2
 
 blind_start = time.process_time()
 print("Running blind search on yard 2")
@@ -622,7 +626,7 @@ print("Search space (3 cars 2 tracks): " + str(search_space_size(3, 2)))
 print("Search space (5 cars 5 tracks): " + str(search_space_size(5, 5)))
 
 # TEST PROBLEM 6
-print("\nTesting Problem 6\n")
+print("\nPROBLEM 6")
 
 # Heuristic:(WRONG)
 #   Each car in an incorrect position will be counted, therefore the smallest amount incorrect is the bet
@@ -655,7 +659,7 @@ def run_a_star(yard_num, init_state, end_state):
     a_end = time.process_time()
 
     # Print the solution as well as the elapsed time
-    print(solution_sequence)
+    print("\n" + str(solution_sequence))
     print("A* took " + str(a_end-a_start) + " seconds for yard " + str(yard_num))
 # END run_a_star(yard_num, init_state, end_state)
 
