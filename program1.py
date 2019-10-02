@@ -4,6 +4,7 @@ import sys
 import math
 import time
 import traceback
+import resource
 
 # declare all the yards to be used
 yard_1 = [[1,2], [1,3], [3,5], [4,5], [2,6], [5,6]]
@@ -14,14 +15,14 @@ yard_5 = [[1,2], [1,3], [1,4]]
 # Declare all the initial states of each of the yards to be used
 s_init_state = ['*','a','b']
 #init_state_1 = [['*'], ['e'], None, ['b', 'c', 'a'], None, ['d']] 
-init_state_1 = ['*', 'e', '', 'bca', '', 'd']
 #init_state_2 = [['*'], ['d'], ['b'], ['a', 'e'], ['c']]
-init_state_2 = ['*', 'd', 'b', 'ae', 'c']
 #init_state_3 = [['*'], ['a'], ['b']]
-init_state_3 = ['*', 'a', 'b']
 #init_state_4 = [['*'], ['a'], ['b', 'c'], ['d']]
-init_state_4 = ['*', 'a', 'bc', 'd']
 #init_state_5 = [['*'], ['a'], ['c', 'b'], ['d']]
+init_state_1 = ['*', 'e', '', 'bca', '', 'd']
+init_state_2 = ['*', 'd', 'b', 'ae', 'c']
+init_state_3 = ['*', 'a', 'b']
+init_state_4 = ['*', 'a', 'bc', 'd']
 init_state_5 = ['*', 'a', 'cb', 'd']
 # Declare all the end(goal) states of each of the yards
 s_end_state = ['*ab','','']
@@ -258,7 +259,7 @@ def IDS(src, target, max_depth):
     action_path = []
     found = False
     while found == False and depth <= max_depth :
-        final_node = DLS(src, target, depth, action_path)
+        final_node = DLS(src, target, depth)
         if final_node != None:
             #print(final_node)
             return final_node
@@ -269,7 +270,7 @@ def IDS(src, target, max_depth):
 # Remove action_path and find the path by going up through the nodes parents
 # Return the Node or None if not found
 # Depth Limited Search
-def DLS(src, target, limit, action_path):
+def DLS(src, target, limit):
     # Check if the target has been found
     if src.state == target:
         # Use src.action to build an ordered list of action to reach the goal
@@ -283,11 +284,11 @@ def DLS(src, target, limit, action_path):
     # If not fill out all children nodes of this node
     src.fill_child_node_list()
     for node in src.child_node_list:
-        node.action = findAction(node.yard, src.state, node.state)
+        #node.action = findAction(node.yard, src.state, node.state)
         # Store the answer in a variable
-        answer_node = DLS(node, target, limit-1, action_path)
+        answer_node = DLS(node, target, limit-1)
         if answer_node != None:
-            action_path.insert(0,node.action)
+            #action_path.insert(0,node.action)
             return answer_node
     return None
 # END DLS(src, target, limit) 
@@ -519,7 +520,6 @@ def possible_action_print(yard, state, yard_num):
 # END possible_action_print(yard, state, yard_num)
 
 print("PROBLEM 1")
-possible_actions(yard_3, s_init_state)
 possible_action_print(yard_1, init_state_1, 1)
 possible_action_print(yard_1, end_state_1, 1)
 possible_action_print(yard_2, init_state_2, 2)
@@ -530,17 +530,11 @@ possible_action_print(yard_5, end_state_5, 5)
 # TEST PROBLEM 2
 
 a1 = ['LEFT', 2, 1]
-#a1_sol = [['*','e'], None, None, ['b', 'c', 'a'], None, ['d']]
 a1_sol = ['*a', '', 'b']
-#assert result(a1, init_state_1) == a1_sol
-#print(result(a1, s_init_state))
 assert result(a1, s_init_state) == a1_sol
 
 a2 = ['RIGHT', 1, 2]
-#a2_sol = [None, ['*', 'e'], None, ['b', 'c', 'a'], None, ['d']]
-#a2_sol = ['', '*e', '', 'bca', '', 'd']
 a2_sol = ['', '*a', 'b']
-#assert result(a2, init_state_1) == a2_sol
 assert result(a2, s_init_state) == a2_sol
 
 state = ['*','']
@@ -556,10 +550,6 @@ print("Problem 2 is correct")
 
 # TEST PROBLEM 3
 
-#expanded_states = expand(yard_1, init_state_1) 
-#expanded_states_sol = [[None, ['*', 'e'], None, ['b', 'c', 'a'], None, ['d']], 
-#                       [None, ['e'], ['*'], ['b', 'c', 'a'], None, ['d']], 
-#                       [['*', 'e'], None, None, ['b', 'c', 'a'], None, ['d']]]
 expanded_states = expand(yard_3, s_init_state)
 expanded_states_sol = [['','*a','b'],
                        ['','a','*b'],
@@ -567,17 +557,10 @@ expanded_states_sol = [['','*a','b'],
                        ['*b','a','']]
 assert expanded_states == expanded_states_sol
 
-#state = s_init_state
-#state = ['', '*a', 'b']
-#print(state)
-#print(possible_actions(yard_3, state))
-
-#sys.exit(-1)
 print("Problem 3 is correct")
 
 # TEST PROBLEM 4
 
-print("\n****************************************")
 # Works for yards 3-5
 
 print("\nRunning blind search on yard 3")
@@ -591,7 +574,7 @@ print(blind_search(yard_5, init_state_5, end_state_5))
 
 blind_start = time.process_time()
 print("Running blind search on yard 2")
-#blind_search(yard_2, init_state_2, end_state_2)
+blind_search(yard_2, init_state_2, end_state_2)
 blind_end = time.process_time()
 print("Blind search on yard 2 took " + str(blind_end - blind_start) + " seconds")
 
