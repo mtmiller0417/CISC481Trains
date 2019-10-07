@@ -304,7 +304,6 @@ def DLS(src, target, limit):
             # Store the answer in a variable
             answer_node = DLS(node, target, limit-1)
             if answer_node != None:
-                #action_path.insert(0,node.action)
                 return answer_node
     return None
 # END DLS(src, target, limit) 
