@@ -4,7 +4,7 @@ import sys
 import math
 import time
 import traceback
-import resource
+#import resource
 
 # declare all the yards to be used
 yard_1 = [[1,2], [1,3], [3,5], [4,5], [2,6], [5,6]]
@@ -252,13 +252,25 @@ class Node:
     # END getF(self)
 # END Node
 
+def check_list(state, state_list):
+    for s in state_list:
+        if s == state:
+            return True
+    return False
+# END check_list(state, state_list)
+
+expanded_states = []
+
 # Iterative Deepening Search
 def IDS(src, target, max_depth):
+    global expanded_states
     # src is a Node
     depth = 1
     action_path = []
     found = False
     while found == False and depth <= max_depth :
+        # reset the expanded_states list before running another iteration of DLS
+        expanded_states = []
         final_node = DLS(src, target, depth)
         if final_node != None:
             #print(final_node)
@@ -271,6 +283,7 @@ def IDS(src, target, max_depth):
 # Return the Node or None if not found
 # Depth Limited Search
 def DLS(src, target, limit):
+    global expanded_states
     # Check if the target has been found
     if src.state == target:
         # Use src.action to build an ordered list of action to reach the goal
@@ -284,12 +297,15 @@ def DLS(src, target, limit):
     # If not fill out all children nodes of this node
     src.fill_child_node_list()
     for node in src.child_node_list:
-        #node.action = findAction(node.yard, src.state, node.state)
-        # Store the answer in a variable
-        answer_node = DLS(node, target, limit-1)
-        if answer_node != None:
-            #action_path.insert(0,node.action)
-            return answer_node
+        # Check if the node has already been expanded(not in the expanded list)
+        if not check_list(node.state, expanded_states):
+            # Add this state to the expanded_nodes list to prevent checking it again
+            expanded_states.append(node.state)
+            # Store the answer in a variable
+            answer_node = DLS(node, target, limit-1)
+            if answer_node != None:
+                #action_path.insert(0,node.action)
+                return answer_node
     return None
 # END DLS(src, target, limit) 
 
