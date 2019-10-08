@@ -3,6 +3,8 @@ import copy
 import sys
 import math
 import time
+import traceback
+#import resource
 
 # declare all the yards to be used
 yard_1 = [[1,2], [1,3], [3,5], [4,5], [2,6], [5,6]]
@@ -11,17 +13,21 @@ yard_3 = [[1,2], [1,3]]
 yard_4 = [[1,2], [1,3], [1,4]]
 yard_5 = [[1,2], [1,3], [1,4]]
 # Declare all the initial states of each of the yards to be used
-init_state_1 = [['*'], ['e'], None, ['b', 'c', 'a'], None, ['d']] 
-init_state_2 = [['*'], ['d'], ['b'], ['a', 'e'], ['c']]
-init_state_3 = [['*'], ['a'], ['b']]
-init_state_4 = [['*'], ['a'], ['b', 'c'], ['d']]
-init_state_5 = [['*'], ['a'], ['c', 'b'], ['d']]
+s_init_state = ['*','a','b']
+
+init_state_1 = ['*', 'e', '', 'bca', '', 'd']
+init_state_2 = ['*', 'd', 'b', 'ae', 'c']
+init_state_3 = ['*', 'a', 'b']
+init_state_4 = ['*', 'a', 'bc', 'd']
+init_state_5 = ['*', 'a', 'cb', 'd']
 # Declare all the end(goal) states of each of the yards
-end_state_1 = [['*', 'a', 'b', 'c', 'd', 'e'], None, None, None, None, None]
-end_state_2 = [['*', 'a', 'b', 'c', 'd', 'e'], None, None, None, None]
-end_state_3 = [['*', 'a', 'b'], None, None]
-end_state_4 = [['*', 'a', 'b', 'c', 'd'], None, None, None]
-end_state_5 = [['*', 'a', 'b', 'c', 'd'], None, None, None]
+s_end_state = ['*ab','','']
+
+end_state_1 = ['*abcde', '', '', '', '', '']
+end_state_2 = ['*abcde', '', '', '', '']
+end_state_3 = ['*ab', '', '']
+end_state_4 = ['*abcd', '', '', '']
+end_state_5 = ['*abcd','','','']
 
 # Define a class for a Track
 class Track:
@@ -70,7 +76,7 @@ def findMoveLeft(yard, state, track_num):
     # Look through the yard list
     for pair in yard:
         # Check if there any cars in the track
-        if state[pair[1]-1] != None: # -1 is used because the index starts at 0
+        if state[pair[1]-1] != '':  # -1 is used because the index starts at 0
             # Check if the track number is found on the left in the yard 
             if pair[1] == track_num:
                 # Check if either track in the pair has the engine
@@ -88,7 +94,7 @@ def findMoveRight(yard, state, track_num):
     # Look through the yard list
     for pair in yard:
         # Check if there any cars in the track
-        if state[pair[0]-1] != None: # -1 is used because the index starts at 0
+        if state[pair[0]-1] != '': # -1 is used because the index starts at 0
             # Check if the track number is found on the right in the yard 
             if pair[0] == track_num:
                 # Check if either track in the pair has the engine
@@ -123,10 +129,9 @@ def push(track, car):
     if track == None:
         track = [str(car)]
     else:
-        track.insert(0, car)
+        track[0] = car + track[0] # insert the car at the head of the track
     return track
 # END push(track, car)
-
 
 # Consumes an action and a state
 # returns a new state(the state after the given action has occured)
@@ -143,6 +148,11 @@ def result(action, state):
     if state[from_track-1] == None:
         print("\nERROR: from_track is empty\n")
         sys.exit()
+    # Error checking, from_track should never be empty
+    if state[from_track-1] == '':
+        print(traceback.print_stack())
+        print("\nERROR: from_track is empty\n")
+        sys.exit()
 
     if test == 1:
         print(new_state[from_track-1])
@@ -151,22 +161,25 @@ def result(action, state):
     # We can assume the action is valid to take bc we are the only actor
     if direction == 'LEFT':
         # Get the car from the from_track
-        from_car = new_state[from_track-1].pop(0)
+        from_car = new_state[from_track-1][0]
+        new_state[from_track-1] = new_state[from_track-1][1:]
         # Check if the to_track is empty
         if new_state[to_track-1] == None:
-            new_state[to_track-1] = [str(from_car)] # If so, set the from_car as its only element
+            new_state[to_track-1] = str(from_car)
         # If its not, append the from_car to the to_track
         else:
-            new_state[to_track-1].append(from_car) # Pop off the first(leftmost) element and append that to the end of the to_track
+            new_state[to_track-1] += from_car # Pop off the first(leftmost) element and append that to the end of the to_track
+
     elif direction == 'RIGHT':
         # Get the car from the from_track
-        from_car = new_state[from_track-1].pop(-1)
+        from_car = new_state[from_track-1][-1:]
+        new_state[from_track-1] = new_state[from_track-1][:-1]
         # Check if the to_track is empty
         if new_state[to_track-1] == None:
-            new_state[to_track-1] = [str(from_car)] # If so, set the from_car as its only element
+            new_state[to_track-1] = str(from_car) # If so, set the from_car as its only element
         # If its not, use my push function to push it to the beginning of the to_track
         else:
-            new_state[to_track-1] = push(new_state[to_track-1],from_car) # Pop off the last(rightmost) element and push that to the beginning of the from_track
+            new_state[to_track-1] =  from_car + new_state[to_track-1]
 
     # Convert empty lists('[]') to None to match tests
     if new_state[from_track-1] == []:
@@ -223,38 +236,59 @@ class Node:
     # END getF(self)
 # END Node
 
+def check_list(state, state_list):
+    for s in state_list:
+        if s == state:
+            return True
+    return False
+# END check_list(state, state_list)
+
+expanded_states = []
+
+# Iterative Deepening Search
 def IDS(src, target, max_depth):
+    global expanded_states
     # src is a Node
     depth = 1
     action_path = []
     found = False
     while found == False and depth <= max_depth :
-        if DLS(src, target, depth, action_path) == True:
-            print(action_path)
-            return True
+        # reset the expanded_states list before running another iteration of DLS
+        expanded_states = []
+        final_node = DLS(src, target, depth)
+        if final_node != None:
+            return final_node
         depth += 1 # Increment the depth
-    return False
+    return None
 # END IDS(src, target, max_depth)
 
-
-def DLS(src, target, limit, action_path):
+# Remove action_path and find the path by going up through the nodes parents
+# Return the Node or None if not found
+# Depth Limited Search
+def DLS(src, target, limit):
+    global expanded_states
     # Check if the target has been found
     if src.state == target:
         # Use src.action to build an ordered list of action to reach the goal
         action_path = [str(src.action)]
-        return True
+        return src
     
     # Check if the max depth has been reached
     if limit <= 0:
-        return False
-
+        return None
+    
+    # If not fill out all children nodes of this node
     src.fill_child_node_list()
     for node in src.child_node_list:
-        node.action = findAction(node.yard, src.state, node.state)
-        if DLS(node, target, limit-1, action_path):
-            action_path.insert(0,node.action)
-            return True
-    return False
+        # Check if the node has already been expanded(not in the expanded list)
+        if not check_list(node.state, expanded_states):
+            # Add this state to the expanded_nodes list to prevent checking it again
+            expanded_states.append(node.state)
+            # Store the answer in a variable
+            answer_node = DLS(node, target, limit-1)
+            if answer_node != None:
+                return answer_node
+    return None
 # END DLS(src, target, limit) 
 
 # Returns what action got you form the start_start to the end_state
@@ -271,11 +305,14 @@ def findAction(yard, start_state, end_state):
 def blind_search(yard, init_state, goal_state):
     root = Node(yard, init_state, None)
     root.fill_child_node_list()
-    IDS(root, goal_state, 100)
+    final_node = IDS(root, goal_state, 100)
+    return expand_answer(final_node, yard)
 # END blind_search(yard, init_state, goal_state)
 
 # Gets the score of the given state, given the end state
 # Give the number of cars in incorrect states
+# NOT USED
+"""
 def get_score(state, end_state):
     score = 0
     total_cars = 0
@@ -292,8 +329,10 @@ def get_score(state, end_state):
                             score += 1
     return total_cars - score
 #END get_score(state, end_state)
+"""
 
-# Got this idea from James Scripchuk 
+# Got this idea from Jimmy Scripchuk 
+# This is the heuristic I used
 def heruristic2(state, end_state):
     state_car_string = ""
     end_state_car_string = ""
@@ -316,29 +355,6 @@ def heruristic2(state, end_state):
     return total_dist
 # END heruristic2(state, end_state)
 
-def distance(from_track_num, to_track_num, yard):
-    found = False
-    distance = 0
-    tmp_list = []
-    looking_list = []
-    # Check if distance is 0
-    if from_track_num == to_track_num:
-        return distance 
-    looking_list.append(from_track_num)
-    #distance += 1
-    while not found:
-        for pair in yard:
-            for num in looking_list:
-                if num == to_track_num:
-                    return distance
-                if pair[1] == num:
-                    tmp_list.append(pair[0])
-        looking_list *= 0 # Clear the list
-        looking_list.extend(tmp_list)
-        distance += 1
-        tmp_list *= 0 # Clear the tmp_list
-# END distance(from_track_num, to_track_num, yard)
-
 # Takes in a list of nodes and returns the one with the smallest f
 def get_smallest_f(node_list, end_state):
     # Initiate the smallest node as the first node to start
@@ -358,7 +374,6 @@ def get_smallest_f(node_list, end_state):
 # Return the open_list in its properly edited form...
 def check_open_list(open_list, node):
     # Look through each node in open list
-
     for open_node in open_list:
         if open_node.state == node.state:
             # If this nodes f is less than the other nodes f, update open_node to match this node
@@ -439,7 +454,7 @@ def a_star_search(yard, init_state, goal_state):
         closed_list.append(node)    # Append that element to the closed_list
         # Check if this node is the goal_state
         if node.state == goal_state:
-            print("Goal state has been found")
+            #print("Goal state has been found")
             return node
 
         # Fill the chosen node's children
@@ -458,6 +473,7 @@ def a_star_search(yard, init_state, goal_state):
         closed_list.append(node)     
 # END a_star_search(yard, init_state, goal_state)
 
+# Expands the answer node, and returns the list of actions taken to get there
 def expand_answer(node, yard):
     action_list = []
     state_list = []
@@ -469,58 +485,91 @@ def expand_answer(node, yard):
         state_list.append(node.state)
         # Move back up the route through the parent
         node = node.parent
-    print(state_list.reverse())
+    #print(state_list.reverse())
     return action_list
 # END expand_answer(node)
 
 # ***************************************************************************************#
 
-# Will use the functions below
+def possible_action_print(yard, state, yard_num):
+    print("\nPossible actions for yard " + str(yard_num) + ", state: " + str(state))
+    print(possible_actions(yard, state))
+# END possible_action_print(yard, state, yard_num)
 
-# prints each state in the yard
-print("Initial State 1")
-printState(init_state_1)
-
-#possible_actions(yard_1, init_state_1)
+print("PROBLEM 1")
+possible_action_print(yard_1, init_state_1, 1)
+possible_action_print(yard_1, end_state_1, 1)
+possible_action_print(yard_2, init_state_2, 2)
+possible_action_print(yard_2, end_state_2, 2)
+possible_action_print(yard_5, init_state_5, 5)
+possible_action_print(yard_5, end_state_5, 5)
 
 # TEST PROBLEM 2
 
 a1 = ['LEFT', 2, 1]
-a1_sol = [['*','e'], None, None, ['b', 'c', 'a'], None, ['d']]
-assert result(a1, init_state_1) == a1_sol
+a1_sol = ['*a', '', 'b']
+assert result(a1, s_init_state) == a1_sol
 
 a2 = ['RIGHT', 1, 2]
-a2_sol = [None, ['*', 'e'], None, ['b', 'c', 'a'], None, ['d']]
-assert result(a2, init_state_1) == a2_sol
+a2_sol = ['', '*a', 'b']
+assert result(a2, s_init_state) == a2_sol
+
+state = ['*','']
+a2_sol = ['', '*']
+assert result(a2, state) == a2_sol
+
+state = ['','*']
+a2_sol = ['*', '']
+assert result(a1, state) == a2_sol
+
 
 print("Problem 2 is correct")
 
 # TEST PROBLEM 3
 
-expanded_states = expand(yard_1, init_state_1) 
-expanded_states_sol = [[None, ['*', 'e'], None, ['b', 'c', 'a'], None, ['d']], 
-                       [None, ['e'], ['*'], ['b', 'c', 'a'], None, ['d']], 
-                       [['*', 'e'], None, None, ['b', 'c', 'a'], None, ['d']]]
+expanded_states = expand(yard_3, s_init_state)
+expanded_states_sol = [['','*a','b'],
+                       ['','a','*b'],
+                       ['*a','','b'],
+                       ['*b','a','']]
 assert expanded_states == expanded_states_sol
 
 print("Problem 3 is correct")
 
 # TEST PROBLEM 4
 
-print("\n****************************************")
-# Works fpor yards 3-5
+# Yard 3
+
+blind_start = time.process_time()
 print("Running blind search on yard 3")
 blind_search(yard_3, init_state_3, end_state_3)
+blind_end = time.process_time()
+print("Blind search on yard 3 took " + str(blind_end - blind_start) + " seconds")
+
+# Yard 4
+
+blind_start = time.process_time()
 print("Running blind search on yard 4")
 blind_search(yard_4, init_state_4, end_state_4)
+blind_end = time.process_time()
+print("Blind search on yard 4 took " + str(blind_end - blind_start) + " seconds")
+
+# Yard 5
+
+blind_start = time.process_time()
 print("Running blind search on yard 5")
 blind_search(yard_5, init_state_5, end_state_5)
+blind_end = time.process_time()
+print("Blind search on yard 5 took " + str(blind_end - blind_start) + " seconds")
+
+# Yard 2
 
 blind_start = time.process_time()
 print("Running blind search on yard 2")
-#blind_search(yard_2, init_state_2, end_state_2)
+blind_search(yard_2, init_state_2, end_state_2)
 blind_end = time.process_time()
 print("Blind search on yard 2 took " + str(blind_end - blind_start) + " seconds")
+
 
 def search_space_size(c, t):
     # use nPr formula for columns
@@ -538,12 +587,11 @@ def search_space_size(c, t):
 #   I calculated this by drawing out the possibilities in a sort of grid pattern
 #   Each column represents each possible initial state  
 #       Initial states start with all cars on the first track (*ab, null, null) for example
-#       All reachable states from this state are the rows of this column
-#       Since we 
+#       All reachable states from this state are the rows of this column 
 #   number of columns = P(c,c) = n!/(n-r)!
 #       this is a special case where n = r so nPr(c,c) = c! 
 #   number of rows = C(c+t-1, c) = n!/
-#   total = columns * rows = nPr(c,c) * ?
+#   total = columns * rows = c! * (c+t-1)!/(c!(c+t-1-c)!)
  
 print("\nPROBLEM 5 ANSWERS")
 print("Search space (2 cars 2 tracks): " + str(search_space_size(2, 2)))
@@ -552,29 +600,49 @@ print("Search space (3 cars 2 tracks): " + str(search_space_size(3, 2)))
 print("Search space (5 cars 5 tracks): " + str(search_space_size(5, 5)))
 
 # TEST PROBLEM 6
-print("\nTesting Problem 6\n")
+print("\nPROBLEM 6")
 
-# Heuristic:(WRONG)
-#   Each car in an incorrect position will be counted, therefore the smallest amount incorrect is the bet
+# Heuristic
+#   H = The total distance that each car is out of place and add them up 
+#   This is concatonating the state list and comparing it to the concatonation of the goal_state list
 
-a_start = time.process_time()
+# This allows easy testing of different tracks
+def run_a_star(yard_num, init_state, end_state):
+    yard = None
+    # select the required yard
+    if yard_num == 1:
+        yard = yard_1
+    elif yard_num == 2:
+        yard = yard_2
+    elif yard_num == 3:
+        yard = yard_3
+    elif yard_num == 4:
+        yard = yard_4
+    elif yard_num == 5:
+        yard = yard_5
+    
+    # Start the timer
+    a_start = time.process_time()
 
-# How to easily test different tracks
-yard_num = 2
-solution_sequence = None
-if yard_num == 2:
-    solution_node = a_star_search(yard_2, init_state_2, end_state_2)
-    solution_sequence = expand_answer(solution_node, yard_2)
-if yard_num == 3:
-    solution_node = a_star_search(yard_3, init_state_3, end_state_3)
-    solution_sequence = expand_answer(solution_node, yard_3)
-if yard_num == 4:
-    solution_node = a_star_search(yard_4, init_state_4, end_state_4)
-    solution_sequence = expand_answer(solution_node, yard_4)
-if yard_num == 5:
-    solution_node = a_star_search(yard_5, init_state_5, end_state_5)
-    solution_sequence = expand_answer(solution_node, yard_5)
+    # Run the search
+    solution_node = a_star_search(yard, init_state, end_state)
 
-a_end = time.process_time()
-print(solution_sequence)
-print("A* took " + str(a_end-a_start) + " seconds for yard " + str(yard_num))
+    # Expand the solution
+    solution_sequence = expand_answer(solution_node, yard)
+
+    # End the timer
+    a_end = time.process_time()
+
+    # Print the solution as well as the elapsed time
+    print("\nSolution sequence for yard " + str(yard_num))
+    print(solution_sequence)
+    print("A* took " + str(a_end-a_start) + " seconds for yard " + str(yard_num))
+# END run_a_star(yard_num, init_state, end_state)
+
+# Run/print a_star for tracks 3-5
+run_a_star(3, init_state_3, end_state_3)
+run_a_star(4, init_state_4, end_state_4)
+run_a_star(5, init_state_5, end_state_5)
+
+# Run/print a_star for track 2
+run_a_star(2, init_state_2, end_state_2)
