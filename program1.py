@@ -433,7 +433,6 @@ def a_star_search(yard, init_state, goal_state):
         closed_list.append(node)    # Append that element to the closed_list
         # Check if this node is the goal_state
         if node.state == goal_state:
-            #print("Goal state has been found")
             return node
 
         # Fill the chosen node's children
@@ -445,7 +444,6 @@ def a_star_search(yard, init_state, goal_state):
             # Check if the node exists already in closed_list
             # Check if the node even needs to be added to the list
             if add_node_check(open_list, child_node) and check_closed_list(open_list, child_node):
-            #if add_node_check(open_list, child_node):
                 # If passed all checks, append this node to the open_list and iterate
                 open_list.append(child_node)  
         # Append the node to the closed_list 
@@ -464,7 +462,6 @@ def expand_answer(node, yard):
         state_list.append(node.state)
         # Move back up the route through the parent
         node = node.parent
-    #print(state_list.reverse())
     return action_list
 # END expand_answer(node)
 
