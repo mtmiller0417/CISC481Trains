@@ -243,6 +243,7 @@ def check_list(state, state_list):
     return False
 # END check_list(state, state_list)
 
+# Global variable used to keep track of all expanded_states in a recursive call
 expanded_states = []
 
 # Iterative Deepening Search
@@ -308,28 +309,6 @@ def blind_search(yard, init_state, goal_state):
     final_node = IDS(root, goal_state, 100)
     return expand_answer(final_node, yard)
 # END blind_search(yard, init_state, goal_state)
-
-# Gets the score of the given state, given the end state
-# Give the number of cars in incorrect states
-# NOT USED
-"""
-def get_score(state, end_state):
-    score = 0
-    total_cars = 0
-    for track_num in range(len(state)):
-        # Look through each car in the track
-        if state[track_num] != None:
-            total_cars += len(state[track_num])
-            for car_num in range(len(state[track_num])):
-                # Check if a car is here, if so add it to the total
-                if state[track_num] != None and end_state[track_num] != None:
-                    # Confirm each car exists in each state
-                    if state[track_num][car_num] != None and end_state[track_num][car_num] != None:
-                        if state[track_num][car_num] == end_state[track_num][car_num]:
-                            score += 1
-    return total_cars - score
-#END get_score(state, end_state)
-"""
 
 # Got this idea from Jimmy Scripchuk 
 # This is the heuristic I used
