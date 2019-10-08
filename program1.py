@@ -14,11 +14,7 @@ yard_4 = [[1,2], [1,3], [1,4]]
 yard_5 = [[1,2], [1,3], [1,4]]
 # Declare all the initial states of each of the yards to be used
 s_init_state = ['*','a','b']
-#init_state_1 = [['*'], ['e'], None, ['b', 'c', 'a'], None, ['d']] 
-#init_state_2 = [['*'], ['d'], ['b'], ['a', 'e'], ['c']]
-#init_state_3 = [['*'], ['a'], ['b']]
-#init_state_4 = [['*'], ['a'], ['b', 'c'], ['d']]
-#init_state_5 = [['*'], ['a'], ['c', 'b'], ['d']]
+
 init_state_1 = ['*', 'e', '', 'bca', '', 'd']
 init_state_2 = ['*', 'd', 'b', 'ae', 'c']
 init_state_3 = ['*', 'a', 'b']
@@ -26,11 +22,7 @@ init_state_4 = ['*', 'a', 'bc', 'd']
 init_state_5 = ['*', 'a', 'cb', 'd']
 # Declare all the end(goal) states of each of the yards
 s_end_state = ['*ab','','']
-#end_state_1 = [['*', 'a', 'b', 'c', 'd', 'e'], None, None, None, None, None]
-#end_state_2 = [['*', 'a', 'b', 'c', 'd', 'e'], None, None, None, None]
-#end_state_3 = [['*', 'a', 'b'], None, None]
-#end_state_4 = [['*', 'a', 'b', 'c', 'd'], None, None, None]
-#end_state_5 = [['*', 'a', 'b', 'c', 'd'], None, None, None]
+
 end_state_1 = ['*abcde', '', '', '', '', '']
 end_state_2 = ['*abcde', '', '', '', '']
 end_state_3 = ['*ab', '', '']
@@ -84,7 +76,6 @@ def findMoveLeft(yard, state, track_num):
     # Look through the yard list
     for pair in yard:
         # Check if there any cars in the track
-        #if state[pair[1]-1] != None: # -1 is used because the index starts at 0
         if state[pair[1]-1] != '':  # -1 is used because the index starts at 0
             # Check if the track number is found on the left in the yard 
             if pair[1] == track_num:
@@ -103,7 +94,6 @@ def findMoveRight(yard, state, track_num):
     # Look through the yard list
     for pair in yard:
         # Check if there any cars in the track
-        #if state[pair[0]-1] != None: # -1 is used because the index starts at 0
         if state[pair[0]-1] != '': # -1 is used because the index starts at 0
             # Check if the track number is found on the right in the yard 
             if pair[0] == track_num:
@@ -139,7 +129,6 @@ def push(track, car):
     if track == None:
         track = [str(car)]
     else:
-        #track.insert(0, car)
         track[0] = car + track[0] # insert the car at the head of the track
     return track
 # END push(track, car)
@@ -172,16 +161,13 @@ def result(action, state):
     # We can assume the action is valid to take bc we are the only actor
     if direction == 'LEFT':
         # Get the car from the from_track
-        #from_car = new_state[from_track-1].pop(0)# OLD VERSION
         from_car = new_state[from_track-1][0]
         new_state[from_track-1] = new_state[from_track-1][1:]
         # Check if the to_track is empty
         if new_state[to_track-1] == None:
-            #new_state[to_track-1] = [str(from_car)] # If so, set the from_car as its only element
             new_state[to_track-1] = str(from_car)
         # If its not, append the from_car to the to_track
         else:
-            #new_state[to_track-1].append(from_car) # Pop off the first(leftmost) element and append that to the end of the to_track
             new_state[to_track-1] += from_car # Pop off the first(leftmost) element and append that to the end of the to_track
 
     elif direction == 'RIGHT':
@@ -190,12 +176,10 @@ def result(action, state):
         new_state[from_track-1] = new_state[from_track-1][:-1]
         # Check if the to_track is empty
         if new_state[to_track-1] == None:
-            #new_state[to_track-1] = [str(from_car)] # If so, set the from_car as its only element
             new_state[to_track-1] = str(from_car) # If so, set the from_car as its only element
         # If its not, use my push function to push it to the beginning of the to_track
         else:
             new_state[to_track-1] =  from_car + new_state[to_track-1]
-            #new_state[to_track-1] = push(new_state[to_track-1],from_car) # Pop off the last(rightmost) element and push that to the beginning of the from_track
 
     # Convert empty lists('[]') to None to match tests
     if new_state[from_track-1] == []:
@@ -273,7 +257,6 @@ def IDS(src, target, max_depth):
         expanded_states = []
         final_node = DLS(src, target, depth)
         if final_node != None:
-            #print(final_node)
             return final_node
         depth += 1 # Increment the depth
     return None
@@ -328,6 +311,8 @@ def blind_search(yard, init_state, goal_state):
 
 # Gets the score of the given state, given the end state
 # Give the number of cars in incorrect states
+# NOT USED
+"""
 def get_score(state, end_state):
     score = 0
     total_cars = 0
@@ -344,8 +329,10 @@ def get_score(state, end_state):
                             score += 1
     return total_cars - score
 #END get_score(state, end_state)
+"""
 
 # Got this idea from Jimmy Scripchuk 
+# This is the heuristic I used
 def heruristic2(state, end_state):
     state_car_string = ""
     end_state_car_string = ""
@@ -367,31 +354,6 @@ def heruristic2(state, end_state):
                 total_dist += abs(i - car_index)
     return total_dist
 # END heruristic2(state, end_state)
-
-"""
-def distance(from_track_num, to_track_num, yard):
-    found = False
-    distance = 0
-    tmp_list = []
-    looking_list = []
-    # Check if distance is 0
-    if from_track_num == to_track_num:
-        return distance 
-    looking_list.append(from_track_num)
-    #distance += 1
-    while not found:
-        for pair in yard:
-            for num in looking_list:
-                if num == to_track_num:
-                    return distance
-                if pair[1] == num:
-                    tmp_list.append(pair[0])
-        looking_list *= 0 # Clear the list
-        looking_list.extend(tmp_list)
-        distance += 1
-        tmp_list *= 0 # Clear the tmp_list
-# END distance(from_track_num, to_track_num, yard)
-"""
 
 # Takes in a list of nodes and returns the one with the smallest f
 def get_smallest_f(node_list, end_state):
@@ -576,16 +538,31 @@ print("Problem 3 is correct")
 
 # TEST PROBLEM 4
 
-# Works for yards 3-5
+# Yard 3
 
-print("\nRunning blind search on yard 3")
-print(blind_search(yard_3, init_state_3, end_state_3))
-print("\nRunning blind search on yard 4")
-print(blind_search(yard_4, init_state_4, end_state_4))
-print("\nRunning blind search on yard 5")
-print(blind_search(yard_5, init_state_5, end_state_5))
+blind_start = time.process_time()
+print("Running blind search on yard 3")
+blind_search(yard_3, init_state_3, end_state_3)
+blind_end = time.process_time()
+print("Blind search on yard 3 took " + str(blind_end - blind_start) + " seconds")
 
-# Try yard 2
+# Yard 4
+
+blind_start = time.process_time()
+print("Running blind search on yard 4")
+blind_search(yard_4, init_state_4, end_state_4)
+blind_end = time.process_time()
+print("Blind search on yard 4 took " + str(blind_end - blind_start) + " seconds")
+
+# Yard 5
+
+blind_start = time.process_time()
+print("Running blind search on yard 5")
+blind_search(yard_5, init_state_5, end_state_5)
+blind_end = time.process_time()
+print("Blind search on yard 5 took " + str(blind_end - blind_start) + " seconds")
+
+# Yard 2
 
 blind_start = time.process_time()
 print("Running blind search on yard 2")
@@ -610,12 +587,11 @@ def search_space_size(c, t):
 #   I calculated this by drawing out the possibilities in a sort of grid pattern
 #   Each column represents each possible initial state  
 #       Initial states start with all cars on the first track (*ab, null, null) for example
-#       All reachable states from this state are the rows of this column
-#       Since we 
+#       All reachable states from this state are the rows of this column 
 #   number of columns = P(c,c) = n!/(n-r)!
 #       this is a special case where n = r so nPr(c,c) = c! 
 #   number of rows = C(c+t-1, c) = n!/
-#   total = columns * rows = nPr(c,c) * ?
+#   total = columns * rows = c! * (c+t-1)!/(c!(c+t-1-c)!)
  
 print("\nPROBLEM 5 ANSWERS")
 print("Search space (2 cars 2 tracks): " + str(search_space_size(2, 2)))
@@ -626,8 +602,9 @@ print("Search space (5 cars 5 tracks): " + str(search_space_size(5, 5)))
 # TEST PROBLEM 6
 print("\nPROBLEM 6")
 
-# Heuristic:(WRONG)
-#   Each car in an incorrect position will be counted, therefore the smallest amount incorrect is the bet
+# Heuristic
+#   H = The total distance that each car is out of place and add them up 
+#   This is concatonating the state list and comparing it to the concatonation of the goal_state list
 
 # This allows easy testing of different tracks
 def run_a_star(yard_num, init_state, end_state):
@@ -657,12 +634,15 @@ def run_a_star(yard_num, init_state, end_state):
     a_end = time.process_time()
 
     # Print the solution as well as the elapsed time
-    print("\n" + str(solution_sequence))
+    print("\nSolution sequence for yard " + str(yard_num))
+    print(solution_sequence)
     print("A* took " + str(a_end-a_start) + " seconds for yard " + str(yard_num))
 # END run_a_star(yard_num, init_state, end_state)
 
-# Run/print a_star for tracks 2-5
-run_a_star(5, init_state_5, end_state_5)
-run_a_star(4, init_state_4, end_state_4)
+# Run/print a_star for tracks 3-5
 run_a_star(3, init_state_3, end_state_3)
+run_a_star(4, init_state_4, end_state_4)
+run_a_star(5, init_state_5, end_state_5)
+
+# Run/print a_star for track 2
 run_a_star(2, init_state_2, end_state_2)
